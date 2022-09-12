@@ -1,10 +1,10 @@
 import express from "express";
-import {getAllMovies,insertMovies,deleteMoviesById,getAllMoviesById,updateMovie} from "../helper.js"
+import { getAllMovies,getMovieById, deleteMovieById, addMovies, updateMovieById } from "../helper.js"
+import { auth } from "../middleware/auth.js"
 
-const router=express.Router();
+const router = express.Router();
 
-
-
+//get all movies
 router.get("/", async (request, response) =>  {
 
     if(request.query.rating){
@@ -17,11 +17,24 @@ router.get("/", async (request, response) =>  {
 });
 
 
+//inbuild middleware - say data is in JSON
+
+//post method  - to insert data to db
+router.post("/", async (request, response) =>  {  
+    const newMovies = request.body;
+    console.log(newMovies);
+    //db.movies.insertMany(movies) 
+   const result = await addMovies(newMovies);
+   response.send(result);
+    });
+
+   
+ // send only movie with the matched id 
 router.get("/:id", async (request, response) =>  {    
     const { id } = request.params;
     console.log(id)
-
-    const movie = await getAllMoviesById(id)
+    //db.movies.findOne({id: "102"})
+    const movie = await getMovieById(id)
     
     console.log(movie)
     movie 
@@ -29,35 +42,25 @@ router.get("/:id", async (request, response) =>  {
     : response.status(404).send({ message: "No movie found" });
 });
 
-
-
 //Delete a movie id
 
 router.delete("/:id", async (request, response) =>  {    
     const { id } = request.params;
     console.log(id)
     //db.movies.deleteOne({id: "102"})
-    const movie = await deleteMoviesById(id)
+    const movie = await deleteMovieById(id)
     response.send(movie)
 });
-router.post("/", async (request, response) =>  {    
-    
-    const newMovies=request.body;
-    
-    //db.movies.findOne({id: "102"})
-    const result = await insertMovies(newMovies)
-    response.send(result)
 
+// update a movie id 
+router.put("/:id", async (request, response) =>  {    
+    const { id } = request.params;
+    const updateMovie = request.body;
+    //db.movies.updateOne({id: "102"}, { $set: updateMovie })
+    const result = await updateMovieById(id, updateMovie)
+    response.send(result)
 });
 
-router.put("/", async (request, response) =>  {    
-    const{id}=request.params;
-    const updateMovie=request.body;
-    
-    //db.movies.findOne({id: "102"})
-    const result = await updateMovie(updateMovie,id)
-    response.send(result)
 
-});
 
-export const moviesRouter=router;
+ export const moviesRouter = router;
